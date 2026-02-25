@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FakeClaw — The 'AI' That Does Literally Nothing</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #d63031;
+    --red-light: #f8a5a5;
+    --dark: #0a0a0a;
+    --dark2: #111111;
+    --dark3: #1a1a1a;
+    --white: #f0f0f0;
+    --muted: #666;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 4rem;
+    border-bottom: 1px solid #1f1f1f;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, var(--red), var(--red-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .nav-links a:hover { color: var(--red-light); }
+
+  .nav-cta {
+    background: var(--red);
+    color: white !important;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    font-size: 0.8rem !important;
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: #ff4444 !important; color: white !important; }
+
+  /* HERO */
+  .hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(214,48,49,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 0.4rem 1rem;
+    margin-bottom: 2rem;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 12vw, 11rem);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    margin-bottom: 1rem;
+    background: linear-gradient(160deg, var(--red) 40%, var(--red-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: slideUp 0.8s ease both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+    animation: slideUp 0.8s 0.2s ease both;
+  }
+
+  .hero-desc {
+    max-width: 560px;
+    font-size: 1.1rem;
+    color: #888;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+    animation: slideUp 0.8s 0.35s ease both;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: slideUp 0.8s 0.5s ease both;
+  }
+
+  .btn-primary {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 1rem 2.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { background: #ff4444; transform: translateY(-2px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid #333;
+    padding: 1rem 2.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-ghost:hover { color: var(--white); border-color: #555; }
+
+  /* MARQUEE */
+  .marquee-wrap {
+    overflow: hidden;
+    border-top: 1px solid #1f1f1f;
+    border-bottom: 1px solid #1f1f1f;
+    padding: 1rem 0;
+    background: var(--dark2);
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 4rem;
+    width: max-content;
+    animation: marquee 20s linear infinite;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .marquee-track span { color: var(--red); }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* SECTION STYLES */
+  section {
+    padding: 6rem 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    line-height: 1;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* LORE SECTION */
+  .lore-section {
+    border-top: 1px solid #1f1f1f;
+  }
+
+  .lore-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 3rem;
+  }
+
+  .lore-card {
+    background: var(--dark2);
+    border: 1px solid #1f1f1f;
+    padding: 2.5rem;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .lore-card:hover { border-color: var(--red); }
+
+  .lore-card::before {
+    content: attr(data-year);
+    position: absolute;
+    top: -1px;
+    right: 1.5rem;
+    background: var(--red);
+    color: white;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    letter-spacing: 2px;
+  }
+
+  .lore-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    color: var(--red-light);
+  }
+
+  .lore-card p {
+    color: #777;
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+
+  .lore-full {
+    margin-top: 3rem;
+    background: var(--dark2);
+    border: 1px solid #1f1f1f;
+    border-left: 3px solid var(--red);
+    padding: 2.5rem;
+  }
+
+  .lore-full p {
+    color: #888;
+    line-height: 1.9;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .lore-full p:last-child { margin-bottom: 0; }
+
+  /* PRICING */
+  .pricing-section {
+    border-top: 1px solid #1f1f1f;
+  }
+
+  .pricing-note {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 3rem;
+    font-style: italic;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .plan {
+    background: var(--dark2);
+    border: 1px solid #1f1f1f;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.3s, transform 0.3s;
+    position: relative;
+  }
+
+  .plan:hover {
+    border-color: var(--red);
+    transform: translateY(-4px);
+  }
+
+  .plan.featured {
+    border-color: var(--red);
+    background: #130808;
+  }
+
+  .plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--red);
+    color: white;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    padding: 0.2rem 0.8rem;
+    white-space: nowrap;
+  }
+
+  .plan-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: var(--red-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .plan-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+
+  .plan-price span {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    vertical-align: top;
+    margin-top: 0.8rem;
+    display: inline-block;
+  }
+
+  .plan-period {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  .plan-features {
+    list-style: none;
+    flex: 1;
+    margin-bottom: 2rem;
+  }
+
+  .plan-features li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #1a1a1a;
+    font-size: 0.9rem;
+    color: #888;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .plan-features li::before {
+    content: '—';
+    color: var(--red);
+    font-family: 'Space Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .plan-cta {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 0.9rem;
+    width: 100%;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .plan-cta:hover { background: var(--red); color: white; }
+
+  .plan.featured .plan-cta {
+    background: var(--red);
+    color: white;
+  }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    border-top: 1px solid #1f1f1f;
+    padding: 3rem 4rem;
+    text-align: center;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .disclaimer p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: #333;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid #1f1f1f;
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #333;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+  }
+
+  /* GLITCH effect on logo hover */
+  .nav-logo {
+    cursor: pointer;
+  }
+
+  .nav-logo:hover {
+    animation: glitch 0.3s infinite;
+  }
+
+  @keyframes glitch {
+    0% { text-shadow: 2px 0 red, -2px 0 cyan; }
+    33% { text-shadow: -2px 0 red, 2px 0 cyan; }
+    66% { text-shadow: 0 2px red, 0 -2px cyan; }
+    100% { text-shadow: 2px 0 red, -2px 0 cyan; }
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--dark2);
+    border: 1px solid var(--red);
+    color: var(--white);
+    padding: 1rem 1.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    max-width: 280px;
+    line-height: 1.6;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .lore-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showToast('ERROR: Logo malfunction. Nothing happened.')">FakeClaw</div>
+  <ul class="nav-links">
+    <li><a href="#lore">Lore</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#" onclick="showToast('Docs are being written by our AI. It has written nothing.')">Docs</a></li>
+    <li><a href="#" class="nav-cta" onclick="showToast('Sign up is temporarily unavailable. It has always been temporarily unavailable.')">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">⚠ Warning: AI functionality not included</div>
+  <h1>FAKECLAW</h1>
+  <p class="hero-sub">The 'AI' That Does Literally Nothing</p>
+  <p class="hero-desc">
+    Powered by proprietary IgnoreNet™ technology. Built on a foundation of empty promises and vibes.
+    Trusted by zero enterprises. Processing your requests at the speed of silence.
+  </p>
+  <div class="hero-buttons">
+    <a href="#" class="btn-primary" onclick="showToast('Initiating... nothing. Have a great day.')">Try For Free</a>
+    <a href="#lore" class="btn-ghost">Read Our Lore</a>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div>Zero uptime guaranteed <span>★</span> Not recommended by any experts <span>★</span> 0ms response time (we don't respond) <span>★</span> SOC2 Noncompliant <span>★</span> Raised $0 in funding <span>★</span> 0 active users <span>★</span> Built by nobody <span>★</span> Award-losing product <span>★</span></div>
+    <div>Zero uptime guaranteed <span>★</span> Not recommended by any experts <span>★</span> 0ms response time (we don't respond) <span>★</span> SOC2 Noncompliant <span>★</span> Raised $0 in funding <span>★</span> 0 active users <span>★</span> Built by nobody <span>★</span> Award-losing product <span>★</span></div>
+  </div>
+</div>
+
+<!-- LORE SECTION -->
+<section id="lore" class="lore-section">
+  <div class="section-label">// Origin Story</div>
+  <h2>THE LORE</h2>
+  <p style="color:#666; max-width: 600px; line-height:1.8; font-size:0.95rem;">
+    Every great AI has an origin story. This is ours. We're not proud of it. But it's ours.
+  </p>
+
+  <div class="lore-grid">
+    <div class="lore-card" data-year="DAY 0">
+      <h3>The Accident</h3>
+      <p>In 2021, a developer named Chad accidentally hit "deploy" on a file called <code style="color:var(--red-light)">main_FINAL_v3_BROKEN.py</code>. He meant to delete it. He did not delete it. FakeClaw was live.</p>
+    </div>
+    <div class="lore-card" data-year="DAY 1">
+      <h3>The Discovery</h3>
+      <p>The code ran. No one knew what it did. Chad looked at it for 45 minutes. He concluded it "probably does something." He was wrong. It did nothing. It has always done nothing.</p>
+    </div>
+    <div class="lore-card" data-year="WEEK 2">
+      <h3>The Pivot</h3>
+      <p>After realizing the code was unfixable, the team pivoted to "AI." They added the word "intelligence" to the README. Investors emailed them. They replied: "yes." They received no money.</p>
+    </div>
+    <div class="lore-card" data-year="TODAY">
+      <h3>The Vision</h3>
+      <p>FakeClaw is now a fully operational non-functioning AI platform. We have a logo. We have this website. The original broken file is still running somewhere on a server Chad forgot about.</p>
+    </div>
+  </div>
+
+  <div class="lore-full">
+    <p>
+      FakeClaw is the code that was never supposed to make it. It was not trained. It was not fine-tuned. It was not aligned. It was deployed by accident on a Tuesday and nobody caught it because Chad was on PTO and the rest of the team thought it was someone else's repo.
+    </p>
+    <p>
+      At its core, FakeClaw runs on what we internally call <strong style="color:var(--red-light)">Null Engine v0.0.1</strong> — a revolutionary architecture that processes every input with the same response: nothing. Not an error. Not a timeout. Just nothing. Competitors have tried to replicate this. They could not, because replicating nothing is harder than it looks.
+    </p>
+    <p>
+      Our mission is simple: to bring the promise of artificial intelligence to everyone, without any of the artificial intelligence. We believe the hype matters more than the product. We believe branding is a feature. We believe you deserve to feel like you're using cutting-edge technology, even when you are, statistically, using nothing.
+    </p>
+    <p style="color: #555; font-style:italic; font-family: 'Space Mono', monospace; font-size:0.8rem;">
+      — The FakeClaw Team (Chad, and Chad's cousin who made the logo)
+    </p>
+  </div>
+</section>
+
+<!-- PRICING SECTION -->
+<section id="pricing" class="pricing-section">
+  <div class="section-label">// Pricing Plans</div>
+  <h2>PICK YOUR NOTHING</h2>
+  <p class="pricing-note">* All plans include the same features: none. Prices are real. Features are not.</p>
+
+  <div class="pricing-grid">
+
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><span>$</span>0</div>
+      <div class="plan-period">/ month / forever</div>
+      <ul class="plan-features">
+        <li>Full access to nothing</li>
+        <li>Unlimited nothing requests</li>
+        <li>Nothing API (no key needed)</li>
+        <li>Community support (nobody responds)</li>
+        <li>Free forever (nothing to sell)</li>
+      </ul>
+      <button class="plan-cta" onclick="showToast('You are now on the Free plan. Nothing has changed.')">Start Doing Nothing</button>
+    </div>
+
+    <div class="plan featured">
+      <div class="plan-badge">★ MOST POPULAR</div>
+      <div class="plan-name">Pro Nothing</div>
+      <div class="plan-price"><span>$</span>29</div>
+      <div class="plan-period">/ month (billed into the void)</div>
+      <ul class="plan-features">
+        <li>Priority nothing (first to receive no response)</li>
+        <li>Advanced nothing analytics</li>
+        <li>Custom nothing domain</li>
+        <li>99.9% uptime SLA (of doing nothing)</li>
+        <li>Dedicated nothing manager</li>
+        <li>Nothing SSO integration</li>
+      </ul>
+      <button class="plan-cta" onclick="showToast('Payment processed. You have paid $29 for nothing. Thank you.')">Upgrade to Nothing</button>
+    </div>
+
+    <div class="plan">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price"><span></span>???</div>
+      <div class="plan-period">/ contact us (we won't reply)</div>
+      <ul class="plan-features">
+        <li>Unlimited nothing at scale</li>
+        <li>Enterprise-grade nothing SLA</li>
+        <li>Custom nothing contracts</li>
+        <li>HIPAA-compliant nothing</li>
+        <li>Dedicated solutions engineer (Chad)</li>
+        <li>On-prem nothing deployment</li>
+        <li>White-labeled nothing</li>
+      </ul>
+      <button class="plan-cta" onclick="showToast('Request received. Chad is reviewing it. Chad has not started reviewing it.')">Talk to Chad</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <p>
+    FakeClaw is a parody product. No actual AI exists here. No refunds will be processed because no charges will actually go through.<br>
+    Chad is a fictional character. The broken Python file is very real. FakeClaw™ is a joke. A good one, we think.<br><br>
+    © 2025 FakeClaw Inc. All rights reserved. No rights were actually reserved. We don't know how rights work.
+  </p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div style="font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:2px; background: linear-gradient(90deg, var(--red), var(--red-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">FAKECLAW</div>
+  <div style="text-align:center;">The 'AI' That Does Literally Nothing</div>
+  <div>v0.0.0 — null engine</div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  // Random "AI thinking" toast on load
+  const bootMessages = [
+    'FakeClaw is loading... (it is not loading anything)',
+    'Initializing Null Engine v0.0.1...',
+    'Connecting to servers... servers not found... continuing anyway.',
+    'AI calibration complete. No AI was calibrated.',
+  ];
+
+  setTimeout(() => {
+    showToast(bootMessages[Math.floor(Math.random() * bootMessages.length)]);
+  }, 1500);
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (href.length > 1) {
+        e.preventDefault();
+        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
